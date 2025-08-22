@@ -169,7 +169,7 @@ export const SpeechBubble = ({
   size = 'md',
   shape = 'bubble',
   tailPosition = 'bottom-center',
-  maxTextLine = 3,
+  maxTextLine, // Default value is handled inside now
 }: SpeechBubbleProps) => {
   const alignmentClasses: Record<Alignment, string> = {
     'top-left': 'top-[10%] left-6',
@@ -195,11 +195,28 @@ export const SpeechBubble = ({
     lg: 'max-w-sm',
   };
 
-  const textBlockClasses = {
-    sm: `m-2 text-xs ${maxTextLine ? `line-clamp-${maxTextLine}` : ''}`,
-    md: `m-3 text-sm ${maxTextLine ? `line-clamp-${maxTextLine}` : ''}`,
-    lg: `m-4 text-base ${maxTextLine ? `line-clamp-${maxTextLine}` : ''}`,
+  // --- 여기가 핵심입니다! ---
+
+  // 1. 기본 텍스트 스타일을 분리합니다.
+  const textBlockBaseClasses = {
+    sm: `m-2 text-xs`,
+    md: `m-3 text-sm`,
+    lg: `m-4 text-base`,
   };
+
+  // 2. 완전한 클래스 이름을 담은 Map을 만듭니다.
+  //    이 Map 덕분에 Tailwind JIT가 클래스들을 발견하고 생성할 수 있습니다.
+  const lineClampMap: { [key: number]: string } = {
+    1: 'line-clamp-1',
+    2: 'line-clamp-2',
+    3: 'line-clamp-3',
+    4: 'line-clamp-4',
+    5: 'line-clamp-5',
+    6: 'line-clamp-6',
+  };
+
+  // 3. maxTextLine prop을 사용해 Map에서 안전하게 클래스를 가져옵니다.
+  const lineClampClass = maxTextLine && lineClampMap[maxTextLine] ? lineClampMap[maxTextLine] : '';
 
   return (
     <div
@@ -217,7 +234,14 @@ export const SpeechBubble = ({
         title={typeof children === 'string' ? children : undefined}
       >
         <div className="overflow-hidden p-3">
-          <p className={clsx('text-left leading-relaxed text-gray-800', textBlockClasses[size])}>
+          {/* 4. clsx를 사용해 기본 스타일과 line-clamp 스타일을 안전하게 결합합니다. */}
+          <p
+            className={clsx(
+              'text-left leading-relaxed text-gray-800',
+              textBlockBaseClasses[size],
+              lineClampClass,
+            )}
+          >
             {children}
           </p>
         </div>

@@ -17,7 +17,12 @@ export default function Home() {
               className="w-full h-auto"
               priority
             />
-            <SpeechBubble alignment="over-bottom-left" tailPosition="top-left" size="md">
+            <SpeechBubble
+              alignment="over-bottom-left"
+              tailPosition="top-left"
+              size="md"
+              maxTextLine={3}
+            >
               이제 본격적으로 <br />
               OO님의 사주팔자를 <br />
               분석해볼 차례네요.
@@ -34,7 +39,12 @@ export default function Home() {
             />
           </div>
           <div className="relative">
-            <SpeechBubble alignment="over-top-left" tailPosition="bottom-left" size="md">
+            <SpeechBubble
+              alignment="over-top-left"
+              tailPosition="bottom-left"
+              size="md"
+              maxTextLine={2}
+            >
               제가 OO님의 사주를 <br />
               보기 쉽게 표로 정리했어요
             </SpeechBubble>
