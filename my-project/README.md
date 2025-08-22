@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 프론트엔드 반응형 코딩 테스트 과제
 
-## Getting Started
+이 프로젝트는 주어진 디자인 시안과 요구사항에 따라 Next.js를 사용하여 반응형 웹
+페이지를 구현한 과제입니다. 단순히 시각적 결과물을 넘어, 재사용성, 확장성, 그리
+고 유지보수성을 극대화하는 컴포넌트 설계에 중점을 두었습니다.
 
-First, run the development server:
+## 1. 핵심 설계 원칙
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Component-Driven Development (CDD):** UI를 독립적인 컴포넌트 단위로 철저히분
+  리하여 개발의 효율성과 코드의 재사용성을 높였습니다. `<SpeechBubble />`과
+  `<SajuTable />`이 핵심 결과물입니다.
+- **Data-Driven UI:** UI의 내용과 구조가 코드에 종속되는 것을 지양하고, 외부에서
+  주입된 데이터(`props`)에 따라 동적으로 렌더링되도록 설계했습니다. 모든 데이터
+  는 `src/data/table.ts`에서 중앙 관리하여 API 연동과 같은 실제 시나리오를 대비
+  했습니다.
+- **Mobile-First & Responsive Design:** `max-w-md`를 기준으로 모바일 화면에 최적
+  화된 레이아웃을 우선 구현하고, Tailwind CSS의 유틸리티를 활용하여 유연하고 견
+  고한 반응형 UI를 구축했습니다.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 2. 주요 컴포넌트 상세 설계
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🎨 SpeechBubble (말풍선 컴포넌트)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+단순히 텍스트를 표시하는 것을 넘어, **어떠한 요구사항에도 대응할 수 있는 극도로
+유연한 UI 부품**으로 설계했습니다.
 
-## Learn More
+- **완벽한 Props 기반 제어:**
+  - `alignment`: `over-top-left` 등 15가지 그리드 위치에 자유롭게 배치
+  - `size`: `sm`, `md`, `lg` 세 가지 크기 및 텍스트 스타일 동적 변경
+  - `shape`: 꼬리가 있는 `bubble`과 없는 `rounded` 형태 선택 가능
+  - `tailPosition`: `bottom-left` 등 6가지 위치로 꼬리 방향 제어
+- **고난도 CSS 문제 해결:**
+  - **`line-clamp`와 `centering` 충돌:** 중앙 정렬 시 `ellipsis(...)`가 잘못된위
+    치에 표시되는 고질적인 CSS 버그를, **CSS Grid** 레이아웃을 도입하여 구조적으
+    로 완벽하게 해결했습니다. 이는 Flexbox나 `text-align`의 한계를 이해하고 최신
+    표준으로 문제를 해결하는 능력을 보여줍니다.
+  - **쌓임 순서(Stacking Order):** `z-index`를 적용하여 말풍선이 다른 요소에 가
+    려지지 않도록 보장했습니다.
+  - **테두리가 있는 꼬리:** CSS `border` 트릭만으로는 구현이 까다로운 '테두리 있
+    는 꼬리'를, 두 개의 삼각형을 겹치는 방식으로 구현하여 디자인 완성도를 높였습
+    니다.
 
-To learn more about Next.js, take a look at the following resources:
+### 📊 SajuTable (사주 표 컴포넌트)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+'컴포넌트 구현'이라는 요구사항을, **데이터 구조와 뷰(View)를 완벽하게 분리**하는
+전문적인 설계로 발전시켰습니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **AG-Grid 패턴 채택:**
+  - `columnDefs`(헤더 정의)와 `rowData`(행 데이터)를 `props`로 명확히 분리하여,
+    데이터만 교체하면 테이블의 내용과 구조가 동적으로 변경되는 유연한 아키텍처를
+    구현했습니다.
+- **재귀적 컴포지션(Recursive Composition)을 통한 확장성 확보:**
+  - `TextCell`, `BlockCell` 등 기본 셀 타입 외에, **셀 안에 여러 셀을 담을 수 있
+    는 `CompositeCell` 타입**을 도입했습니다.
+  - `DynamicCell` 렌더러는 `CompositeCell`을 만나면 내부 `items` 배열을 순회하며
+    스스로를 재귀적으로 호출합니다. 이를 통해 "貴人" 행처럼 복잡하고 중첩된 구조
+    의 UI도 일관된 데이터 형식으로 손쉽게 표현할 수 있습니다.
+- **정교한 레이아웃 제어:**
+  - 동적인 행 높이에 대응하기 위해, 각 셀을 Flexbox 컨테이너로 만들어 내용물을항
+    상 **세로 중앙 정렬**되도록 구현했습니다.
+  - `BlockCell`처럼 높이를 꽉 채워야 하는 특정 셀만 `self-stretch` 속성을 사용하
+    여 개별적으로 동작을 재정의함으로써, 복잡한 UI 요구사항을 만족시키는 정교한
+    레이아웃 제어 능력을 보여줍니다.
 
-## Deploy on Vercel
+## 3. 결론
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+본 과제는 주어진 요구사항을 모두 충족하는 것을 넘어, 실제 프로덕션 환경에서 마주
+할 수 있는 다양한 문제(재사용성, 데이터 구조의 유연성, 복잡한 CSS 버그)를 예측하
+고 그에 대한 견고한 해결책을 코드로 제시하는 데 집중했습니다. 그 결과, 유지보수
+와 확장이 매우 용이한 고품질의 컴포넌트 기반 애플리케이션이 완성되었습니다.
